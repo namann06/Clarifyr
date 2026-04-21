@@ -6,6 +6,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -23,8 +25,18 @@ public class SecurityConfig {
     // Endpoints that do NOT require authentication
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/test",
-            "/api/test/**"
+            "/api/test/**",
+            "/api/users/register",
+            "/api/tutor/profile/**"
     };
+
+    /**
+     * Password encoder bean for BCrypt hashing.
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     /**
      * Main security filter chain.
