@@ -3,6 +3,9 @@ package com.clarifyr.controller;
 import com.clarifyr.dto.MessageRequest;
 import com.clarifyr.dto.UserRegistrationRequest;
 import com.clarifyr.entity.UserRole;
+import com.clarifyr.security.CustomUserDetails;
+import com.clarifyr.security.CustomUserDetailsService;
+import com.clarifyr.security.JwtUtil;
 import com.clarifyr.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +38,17 @@ class MessageControllerTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    private String getAuthToken(String email) {
+        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(email);
+        return "Bearer " + jwtUtil.generateToken(userDetails);
+    }
+
     private Long studentId;
     private Long tutorId;
 
@@ -57,6 +71,7 @@ class MessageControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/messages")
+                        .header("Authorization", getAuthToken("student_chat@test.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -71,10 +86,17 @@ class MessageControllerTest {
         MessageRequest m1 = MessageRequest.builder().senderId(studentId).receiverId(tutorId).content("Msg 1").build();
         MessageRequest m2 = MessageRequest.builder().senderId(tutorId).receiverId(studentId).content("Msg 2").build();
 
-        mockMvc.perform(post("/api/messages").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(m1)));
-        mockMvc.perform(post("/api/messages").contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(m2)));
+        mockMvc.perform(post("/api/messages")
+                .header("Authorization", getAuthToken("student_chat@test.com"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(m1)));
+        mockMvc.perform(post("/api/messages")
+                .header("Authorization", getAuthToken("tutor_chat@test.com"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(m2)));
 
-        mockMvc.perform(get("/api/messages/history/" + studentId + "/" + tutorId))
+        mockMvc.perform(get("/api/messages/history/" + studentId + "/" + tutorId)
+                        .header("Authorization", getAuthToken("student_chat@test.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].content").value("Msg 1"))
@@ -91,6 +113,7 @@ class MessageControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/messages")
+                        .header("Authorization", getAuthToken("student_chat@test.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

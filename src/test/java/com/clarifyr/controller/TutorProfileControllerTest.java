@@ -3,6 +3,9 @@ package com.clarifyr.controller;
 import com.clarifyr.dto.TutorProfileRequest;
 import com.clarifyr.dto.UserRegistrationRequest;
 import com.clarifyr.entity.UserRole;
+import com.clarifyr.security.CustomUserDetails;
+import com.clarifyr.security.CustomUserDetailsService;
+import com.clarifyr.security.JwtUtil;
 import com.clarifyr.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -36,6 +39,17 @@ class TutorProfileControllerTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    private String getAuthToken(String email) {
+        CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(email);
+        return "Bearer " + jwtUtil.generateToken(userDetails);
+    }
+
     @Test
     @DisplayName("TC-2.1: Create Profile for valid TUTOR")
     void createProfile_Success() throws Exception {
@@ -58,6 +72,7 @@ class TutorProfileControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/tutor/profile")
+                        .header("Authorization", getAuthToken("tutor@test.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(profileRequest)))
                 .andExpect(status().isCreated())
@@ -87,6 +102,7 @@ class TutorProfileControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/tutor/profile")
+                        .header("Authorization", getAuthToken("student_tutor@test.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(profileRequest)))
                 .andExpect(status().isForbidden())
@@ -114,12 +130,14 @@ class TutorProfileControllerTest {
                 .build();
         
         mockMvc.perform(post("/api/tutor/profile")
+                        .header("Authorization", getAuthToken("get_tutor@test.com"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(profileRequest)))
                 .andExpect(status().isCreated());
 
         // 2. Fetch Profile
-        mockMvc.perform(get("/api/tutor/profile/" + userId))
+        mockMvc.perform(get("/api/tutor/profile/" + userId)
+                        .header("Authorization", getAuthToken("get_tutor@test.com")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value("Frontend expert"));
     }
