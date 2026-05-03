@@ -62,6 +62,7 @@ public class MessageService {
                 .senderName(message.getSender().getName())
                 .receiverId(message.getReceiver().getId())
                 .receiverName(message.getReceiver().getName())
+                .receiverEmail(message.getReceiver().getEmail())
                 .content(message.getContent())
                 .timestamp(message.getTimestamp())
                 .build();

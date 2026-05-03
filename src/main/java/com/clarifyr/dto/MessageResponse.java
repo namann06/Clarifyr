@@ -20,6 +20,7 @@ public class MessageResponse {
     private String senderName;
     private Long receiverId;
     private String receiverName;
+    private String receiverEmail;
     private String content;
     private LocalDateTime timestamp;
 }
