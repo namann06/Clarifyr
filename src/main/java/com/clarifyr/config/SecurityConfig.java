@@ -45,7 +45,8 @@ public class SecurityConfig {
             "/api/users/register",
             "/api/users/login",
             "/api/tutors/**",
-            "/ws/**"
+            "/ws/**",
+            "/api/reviews/tutor/**"
     };
 
     /**
