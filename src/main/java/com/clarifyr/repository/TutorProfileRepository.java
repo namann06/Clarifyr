@@ -21,6 +21,8 @@ import java.util.Optional;
 @Repository
 public interface TutorProfileRepository extends JpaRepository<TutorProfile, Long> {
 
+    Optional<TutorProfile> findByUserId(Long userId);
+
     /**
      * Optimized query to fetch TutorProfile along with User and Subjects in ONE query.
      */
