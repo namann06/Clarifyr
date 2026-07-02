@@ -65,9 +65,8 @@ Render can deploy our Spring Boot application automatically using the `Dockerfil
 
 | Key | Value | Description |
 | :--- | :--- | :--- |
-| `DB_HOST` | `db.xxxxxx.supabase.co` | From your Supabase host |
-| `DB_PORT` | `5432` | Standard PostgreSQL port |
-| `DB_NAME` | `postgres` | Default Supabase database name |
+| `SPRING_DATASOURCE_URL` | `jdbc:postgresql://db.xxxxxx.supabase.co:5432/postgres?sslmode=require` | Complete JDBC Connection URL from Supabase |
+| `SPRING_DATASOURCE_DRIVER_CLASS_NAME` | `org.postgresql.Driver` | Driver class name for PostgreSQL |
 | `DB_USERNAME` | `postgres` | Default Supabase master user |
 | `DB_PASSWORD` | `your_actual_supabase_password` | The database password you chose |
 | `JWT_SECRET` | `generate_a_long_random_signing_key_here_32_chars` | Signing key for JWT tokens |
