@@ -1,0 +1,12 @@
+# ============================================================
+# Clarifyr - Local Development Override Template
+# ============================================================
+# Copy this file to application-local.properties and fill in your actual values.
+# NEVER commit application-local.properties to version control.
+# ============================================================
+
+# Local database password
+spring.datasource.password=your_database_password_here
+
+# Local JWT secret key (Base64-encoded 256-bit key)
+jwt.secret=your_base64_encoded_jwt_secret_here
