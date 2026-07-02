@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # ============================================================
+  # MySQL Database Service
+  # ============================================================
+  mysql-db:
+    image: mysql:8.0
+    container_name: clarifyr-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: clarifyr_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ============================================================
+  # Spring Boot Backend Service
+  # ============================================================
+  clarifyr-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: clarifyr-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_NAME: clarifyr_db
+      DB_USERNAME: root
+      DB_PASSWORD: rootpassword
+      JWT_SECRET: supersecretjwtsigninkey12345678901234567890
+      JWT_EXPIRATION: 86400000
+      APP_CORS_ALLOWED_ORIGINS: "http://localhost,http://localhost:80,http://localhost:5173,http://localhost:3000"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+  # ============================================================
+  # React/Vite Frontend Service
+  # ============================================================
+  clarifyr-frontend:
+    build:
+      context: ./clarifyr_frontend
+      dockerfile: Dockerfile
+      args:
+        # Build-time environment variables for Vite bundle
+        VITE_API_BASE_URL: "http://localhost:8080/api"
+        VITE_WS_URL: "http://localhost:8080/ws"
+    container_name: clarifyr-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - clarifyr-backend
+
+volumes:
+  mysql-data:
