@@ -38,9 +38,18 @@ public class TutorDiscoveryService {
     public List<TutorProfileResponse> searchTutors(String subject, String query) {
         Collection<TutorProfile> profiles;
 
-        if (subject != null && !subject.isBlank()) {
+        boolean hasSubject = subject != null && !subject.isBlank();
+        boolean hasQuery = query != null && !query.isBlank();
+
+        if (hasSubject && hasQuery) {
+            profiles = tutorProfileRepository.findBySubject(subject).stream()
+                    .filter(tp -> (tp.getDescription() != null && tp.getDescription().toLowerCase().contains(query.toLowerCase()))
+                            || (tp.getUser().getName() != null && tp.getUser().getName().toLowerCase().contains(query.toLowerCase()))
+                            || (tp.getSubjects() != null && tp.getSubjects().stream().anyMatch(s -> s.toLowerCase().contains(query.toLowerCase()))))
+                    .collect(Collectors.toSet());
+        } else if (hasSubject) {
             profiles = tutorProfileRepository.findBySubject(subject);
-        } else if (query != null && !query.isBlank()) {
+        } else if (hasQuery) {
             profiles = tutorProfileRepository.searchByDescription(query);
         } else {
             profiles = tutorProfileRepository.findAllWithUserAndSubjects();

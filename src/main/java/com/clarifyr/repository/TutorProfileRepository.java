@@ -51,11 +51,14 @@ public interface TutorProfileRepository extends JpaRepository<TutorProfile, Long
     Set<TutorProfile> findBySubject(@Param("subject") String subject);
 
     /**
-     * Search tutors by keywords in their description.
+     * Search tutors by keywords in their description, name, or subjects.
      */
     @Query("SELECT DISTINCT tp FROM TutorProfile tp " +
            "LEFT JOIN FETCH tp.user " +
            "LEFT JOIN FETCH tp.subjects " +
-           "WHERE LOWER(tp.description) LIKE LOWER(CONCAT('%', :query, '%'))")
+           "LEFT JOIN tp.subjects s " +
+           "WHERE LOWER(tp.description) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "OR LOWER(tp.user.name) LIKE LOWER(CONCAT('%', :query, '%')) " +
+           "OR LOWER(s) LIKE LOWER(CONCAT('%', :query, '%'))")
     Set<TutorProfile> searchByDescription(@Param("query") String query);
 }
